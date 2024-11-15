@@ -10,25 +10,38 @@ const BITBUCKET_WORKSPACE = process.env.BITBUCKET_WORKSPACE
 const DING_ROBOT_ACCESS_TOKEN = process.env.DING_ROBOT_ACCESS_TOKEN;
 
 
-// Run the function
-cron.schedule('*/5 * * * *', () => {
+/**
+ * Schedules the main function to run every 5 minutes using cron.
+ *
+ * This cron job runs every 5 minutes and triggers the main function to fetch
+ * pull request data and send a DingTalk notification.
+ */cron.schedule('*/5 * * * *', () => {
     main();
 })
 
 // Main function to fetch pull requests and send the DingTalk message
 async function main() {
     try {
-        const repositoriesData = await fetchAllPullRequests();  // Fetch pull requests
-        await sendToDingTalk(repositoriesData);  // Send the DingTalk message
+        const repositoriesData = await fetchAllPullRequests();
+        await sendToDingTalk(repositoriesData);
     } catch (error) {
         console.error('Error in main function:', error.message);
     }
 }
 
-
+/**
+ * Fetches all open pull requests from Bitbucket across multiple repositories.
+ *
+ * This function fetches pull request data for all the repositories specified,
+ * processes the information, and stores it in a structured format.
+ *
+ * @returns {Promise<Array>} A promise that resolves with an array of repository data,
+ * containing repository name and a list of pull requests.
+ * @throws {Error} Throws an error if fetching pull requests from Bitbucket fails.
+ */
+async
 async function fetchAllPullRequests() {
     const header = { 'Authorization': `Bearer ${BITBUCKET_ACCESS_TOKEN}` };
-    console.log(header)
     const queryParams = { "state": 'OPEN' };
     const repositories =  process.env.BITBUCKET_REPOSITORIES ? process.env.BITBUCKET_REPOSITORIES.split(',') : [];
 
@@ -84,10 +97,18 @@ async function fetchAllPullRequests() {
     }
 
     return repositoriesData;
-    //console.log(JSON.stringify(createDingTalkMessage(repositoriesData)))
 }
 
-// Function to create DingTalk message
+/**
+ * Constructs the DingTalk message content based on the pull request data.
+ *
+ * This function generates a text message in a format suitable for DingTalk.
+ * It provides a list of pending pull requests across multiple repositories.
+ *
+ * @param {Array} repositoriesData An array of repository data containing pull requests.
+ * @returns {Object} The DingTalk message object with the constructed message content.
+ * @throws {Error} Throws an error if the message construction fails.
+ */
 function createDingTalkMessage(repositoriesData) {
     // Create a message content
     let prMessages = repositoriesData
@@ -116,8 +137,14 @@ function createDingTalkMessage(repositoriesData) {
     };
 }
 
-// Function to send message to DingTalk (example)
-async function sendToDingTalk(repositoriesData) {
+/**
+ * Sends a DingTalk notification with pull request information.
+ *
+ * This function takes the data of repositories and their respective pull requests,
+ * constructs a message, and sends it to a DingTalk webhook.
+ *
+ */
+ async function sendToDingTalk(repositoriesData) {
     const dingWebhookUrl = `https://oapi.dingtalk.com/robot/send?access_token=${DING_ROBOT_ACCESS_TOKEN}`;
     const message = createDingTalkMessage(repositoriesData);
 
