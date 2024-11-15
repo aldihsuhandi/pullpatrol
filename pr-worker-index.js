@@ -9,13 +9,15 @@ const BITBUCKET_WORKSPACE = process.env.BITBUCKET_WORKSPACE
 
 const DING_ROBOT_ACCESS_TOKEN = process.env.DING_ROBOT_ACCESS_TOKEN;
 
+const CRON_SCHEDULER = process.env.CRON_SCHEDULER;
+
 
 /**
  * Schedules the main function to run every 5 minutes using cron.
  *
  * This cron job runs every 5 minutes and triggers the main function to fetch
  * pull request data and send a DingTalk notification.
- */cron.schedule('*/5 * * * *', () => {
+ */cron.schedule(CRON_SCHEDULER, () => {
     main();
 })
 
