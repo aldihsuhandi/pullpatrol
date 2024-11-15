@@ -13,11 +13,11 @@ const CRON_SCHEDULER = process.env.CRON_SCHEDULER;
 
 
 /**
- * Schedules the main function to run every 5 minutes using cron.
+ * Schedules the main function to run every x minutes using cron.
  *
- * This cron job runs every 5 minutes and triggers the main function to fetch
- * pull request data and send a DingTalk notification.
- */cron.schedule(CRON_SCHEDULER, () => {
+ * This is configurable through env variable
+ */
+cron.schedule(CRON_SCHEDULER, () => {
     main();
 })
 
