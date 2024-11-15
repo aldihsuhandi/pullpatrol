@@ -1,8 +1,14 @@
 const axios = require('axios');
 const moment = require('moment');
 const cron = require('node-cron');
+const express = require('express');
+
 
 require('dotenv').config();
+
+const PORT = process.env.PORT || 3000;
+const app = express();
+
 
 const BITBUCKET_ACCESS_TOKEN = process.env.BITBUCKET_ACCESS_TOKEN;
 const BITBUCKET_WORKSPACE = process.env.BITBUCKET_WORKSPACE
@@ -41,7 +47,6 @@ async function main() {
  * containing repository name and a list of pull requests.
  * @throws {Error} Throws an error if fetching pull requests from Bitbucket fails.
  */
-async
 async function fetchAllPullRequests() {
     const header = { 'Authorization': `Bearer ${BITBUCKET_ACCESS_TOKEN}` };
     const queryParams = { "state": 'OPEN' };
@@ -157,3 +162,16 @@ function createDingTalkMessage(repositoriesData) {
         console.error('Error sending DingTalk notification:', error.message);
     }
 }
+
+app.listen(PORT, () => {
+    console.log(`App is listening on port ${PORT}`);
+});
+
+app.get('/actuator/health', (req, res) => {
+    const healthStatus = {
+        status: 'UP',
+        timestamp: new Date().toISOString()
+    };
+    
+    res.json(healthStatus);
+});
