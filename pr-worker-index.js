@@ -23,9 +23,9 @@ const CRON_SCHEDULER = process.env.CRON_SCHEDULER;
  *
  * This is configurable through env variable
  */
-cron.schedule(CRON_SCHEDULER, () => {
+// cron.schedule(CRON_SCHEDULER, () => {
     main();
-})
+// })
 
 // Main function to fetch pull requests and send the DingTalk message
 async function main() {
@@ -48,9 +48,11 @@ async function main() {
  * @throws {Error} Throws an error if fetching pull requests from Bitbucket fails.
  */
 async function fetchAllPullRequests() {
-    const header = { 'Authorization': `Bearer ${BITBUCKET_ACCESS_TOKEN}` };
+    const username = process.env.PERSONAL_BITBUCKET_USERNAME;
+    const password = process.env.PERSONAL_BITBUCKET_PASSWORD;
+
     const queryParams = { "state": 'OPEN' };
-    const repositories =  process.env.BITBUCKET_REPOSITORIES ? process.env.BITBUCKET_REPOSITORIES.split(',') : [];
+    const repositories = process.env.BITBUCKET_REPOSITORIES ? process.env.BITBUCKET_REPOSITORIES.split(',') : [];
 
     let repositoriesData = [];
 
@@ -62,7 +64,10 @@ async function fetchAllPullRequests() {
         while (nextUrl) {
             try {
                 const response = await axios.get(nextUrl, {
-                    headers: header,
+                    auth: {
+                        username: username,
+                        password: password,
+                    },
                     params: queryParams
                 });
 
@@ -124,8 +129,8 @@ function createDingTalkMessage(repositoriesData) {
             let repoMessage = `**${repo.repo}**\n`;
 
             repo.pullRequests.forEach((pr, index) => {
-                repoMessage += `${index + 1}. ${pr.id} [${pr.title}] → ${pr.link}\n`
-                repoMessage += pr.duration > 0 ? `Duration: ${pr.duration} day\n` : ''
+                repoMessage += `${index + 1}. ${pr.id} [${pr.title}] → ${pr.link} \n`
+                repoMessage += pr.duration > 0 ? `Opened ${pr.duration} day${pr.duration > 1 ? 's' : ''} ago\n` : ''
                 repoMessage += pr.commentCount > 0 ? `Comments: ${pr.commentCount}\n\n` : '\n'
             });
 
@@ -136,10 +141,10 @@ function createDingTalkMessage(repositoriesData) {
     return {
         msgtype: 'text',
         text: {
-            content: `Hi Team Dear developers, \n\nPlease review the following pending pull requests. Approve them accordingly, or close them if they are no longer relevant.\n\n${prMessages}\n\nThank you.`
+            content: `Hi Team,\n\nKindly review the following pending pull requests. Please approve them as needed or close them if they are no longer applicable.\n\n${prMessages}\n\nThank you.`
         },
         at: {
-            isAtAll: true
+            isAtAll: false
         }
     };
 }
@@ -151,9 +156,10 @@ function createDingTalkMessage(repositoriesData) {
  * constructs a message, and sends it to a DingTalk webhook.
  *
  */
- async function sendToDingTalk(repositoriesData) {
+async function sendToDingTalk(repositoriesData) {
     const dingWebhookUrl = `https://oapi.dingtalk.com/robot/send?access_token=${DING_ROBOT_ACCESS_TOKEN}`;
     const message = createDingTalkMessage(repositoriesData);
+    console.log(JSON.stringify(message))
 
     try {
         const response = await axios.post(dingWebhookUrl, message);
@@ -172,6 +178,5 @@ app.get('/actuator/health', (req, res) => {
         status: 'UP',
         timestamp: new Date().toISOString()
     };
-    
     res.json(healthStatus);
 });
