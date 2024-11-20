@@ -23,9 +23,9 @@ const CRON_SCHEDULER = process.env.CRON_SCHEDULER;
  *
  * This is configurable through env variable
  */
-// cron.schedule(CRON_SCHEDULER, () => {
+cron.schedule(CRON_SCHEDULER, () => {
     main();
-// })
+})
 
 // Main function to fetch pull requests and send the DingTalk message
 async function main() {
@@ -126,12 +126,13 @@ function createDingTalkMessage(repositoriesData) {
     let prMessages = repositoriesData
         .filter(repo => repo.pullRequests && repo.pullRequests.length > 0)
         .map(repo => {
-            let repoMessage = `**${repo.repo}**\n`;
+            let repoMessage = `-- ${repo.repo}\n`;
 
             repo.pullRequests.forEach((pr, index) => {
-                repoMessage += `${index + 1}. ${pr.id} [${pr.title}] → ${pr.link} \n`
-                repoMessage += pr.duration > 0 ? `Opened ${pr.duration} day${pr.duration > 1 ? 's' : ''} ago\n` : ''
-                repoMessage += pr.commentCount > 0 ? `Comments: ${pr.commentCount}\n\n` : '\n'
+                repoMessage += `${index + 1}. ${pr.id} [${pr.title}] → ${pr.link}/. `
+                repoMessage += pr.duration > 0 ? ` Opened ${pr.duration} day${pr.duration > 1 ? 's' : ''} ago.` : ''
+                repoMessage += pr.commentCount > 0 ? ` Comments: ${pr.commentCount}\n` : '\n'
+                repoMessage += '\n'
             });
 
             return repoMessage;
