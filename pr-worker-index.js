@@ -23,9 +23,9 @@ const CRON_SCHEDULER = process.env.CRON_SCHEDULER;
  *
  * This is configurable through env variable
  */
-cron.schedule(CRON_SCHEDULER, () => {
+// cron.schedule(CRON_SCHEDULER, () => {
     main();
-})
+// })
 
 // Main function to fetch pull requests and send the DingTalk message
 async function main() {
@@ -145,7 +145,7 @@ function createDingTalkMessage(repositoriesData) {
             content: `Hi Team,\n\nKindly review the following pending pull requests. Please approve them as needed or close them if they are no longer applicable.\n\n${prMessages}\n\nThank you.`
         },
         at: {
-            isAtAll: false
+            isAtAll: true
         }
     };
 }
@@ -158,7 +158,9 @@ function createDingTalkMessage(repositoriesData) {
  *
  */
 async function sendToDingTalk(repositoriesData) {
-    const dingWebhookUrl = `https://oapi.dingtalk.com/robot/send?access_token=${DING_ROBOT_ACCESS_TOKEN}`;
+    const dingWebhookUrl = `https://oapi.dingtalk.com/robot/send?access_token=0d6331b31ad8bedf147e1e21909b28a55b04b0171bb5b2bb82ec4eec68355135`;
+    // https://oapi.dingtalk.com/robot/send?access_token=0d6331b31ad8bedf147e1e21909b28a55b04b0171bb5b2bb82ec4eec68355135
+    // https://oapi.dingtalk.com/robot/send?access_token=fb9aa5c4cf799d763cb96c7c28b1e41f70efd2d1b568b08f596d7225413c7c05
     const message = createDingTalkMessage(repositoriesData);
     console.log(JSON.stringify(message))
 
