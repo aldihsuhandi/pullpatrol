@@ -87,8 +87,13 @@ async function fetchAllPullRequests() {
                         sourceBranch: pr.source.branch.name,
                         destinationBranch: pr.destination.branch.name,
                         commentCount: pr.comment_count,
-                        author: pr.author.nickname
+                        author: pr.author.nickname,
+                        draft: pr.draft
                     };
+
+                    if (prData.draft) {
+                        return;
+                    }
 
                     pullRequests.push(prData);
                 });
@@ -122,6 +127,19 @@ async function fetchAllPullRequests() {
  * @throws {Error} Throws an error if the message construction fails.
  */
 function createDingTalkMessage(repositoriesData) {
+    let isPrEmpty = repositoriesData
+        .filter(repo => repo.pullRequests && repo.pullRequests.length > 0).length == 0;
+    if (isPrEmpty) {
+        return {
+            msgtype: 'text',
+            text: {
+                content: `Hi Team,\n\nCurrently there is no pull request(s) to be reviewed.\n\nThank you.`
+            },
+            at: {
+                isAtAll: true
+            }
+        };
+    }
     // Create a message content
     let prMessages = repositoriesData
         .filter(repo => repo.pullRequests && repo.pullRequests.length > 0)
